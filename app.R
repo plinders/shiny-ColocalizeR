@@ -58,7 +58,7 @@ ui <- shinyUI(fluidPage(
         br(),
         br(),
         strong("ColocalizeR plots pixel intensities per channel in a scatter plot and derives R-squared values as a goodness-of-fit measure."),
-        ("ColocalizeR filters out pixels that are < 20% max intensity in both channels")
+        ("ColocalizeR filters out pixels that are < 20% max intensity in both channels"),
         h4("Instructions:"),
         p("* Upload .lif file or .zip of .oif files using the sidebar."),
         p("* Pick the channel numbers corresponding to your fluorochromes of interest."),
