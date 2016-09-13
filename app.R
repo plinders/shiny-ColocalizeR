@@ -53,20 +53,21 @@ ui <- shinyUI(fluidPage(
       # Additional info
       mainPanel(
         h3("Welcome to ColocalizeR!"),
-        ("ColocalizeR currently only accepts files from Olympus microscopy software (.oif extension) in .zip format."),
+        ("ColocalizeR currently only accepts files from Olympus microscopy software (.oif extension) in .zip format and .lif files (confirmed working with Leica SP8, SP5 unsupported but might work)."),
+        ("ColocalizeR pulls the name of each image from the metadata"),
         br(),
         br(),
         strong("ColocalizeR plots pixel intensities per channel in a scatter plot and derives R-squared values as a goodness-of-fit measure."),
+        ("ColocalizeR filters out pixels that are < 20% max intensity in both channels")
         h4("Instructions:"),
-        p("* Upload .zip using the sidebar."),
-        p("* Manually enter the channel numbers corresponding to your fluorochromes of interest."),
+        p("* Upload .lif file or .zip of .oif files using the sidebar."),
+        p("* Pick the channel numbers corresponding to your fluorochromes of interest."),
         p("* Press run."),
         p("* Download .zip with output files."),
         br(),
         br(),
         h5("To do:"),
-        p("* Accept .lif files"),
-        p("* Extract filename from image metadata")
+        p("* Add ROI selection"),
 
 
       )
@@ -78,7 +79,7 @@ server <- shinyServer(function(input, output, session) {
  observeEvent(input$run, {
    #remove leftover .zip(s) and other files first
    file.remove(list.files(pattern = ".zip$|.lif$|.pdf$|.txt$"))
-   
+
    inFile <- input$file1
 
    if (is.null(inFile))
@@ -88,7 +89,7 @@ server <- shinyServer(function(input, output, session) {
    #set up parallel computing for image reading optimization
    total_cores <- detectCores() - 1
    cl <- makeCluster(total_cores)
-   
+
    #set bools to false so they don't break the script
    oif_bool <- FALSE
    lif_bool <- FALSE
@@ -129,17 +130,17 @@ server <- shinyServer(function(input, output, session) {
    }
    #stop cluster to free up memory
    stopCluster(cl)
-   
+
    #save fluorochrome info to variables
    fluo1 <- input$selectfluor1
    fluo2 <- input$selectfluor2
-   
+
    withProgress(message = "Processing images", detail = (paste("Image", 1)), value = 0, {
    #Turn images into matrices, this will become a for loop for automated processing of all files
    #Channel 1 = GFP, Channel 2 = mCh, this could become a user input thing once I figure out how that works
    for (i in seq_along(images_list)) {
      incProgress(1/seq_along(images_list), detail = paste("Image", i))
-     
+
      if (oif_bool == TRUE) {
        img_name <- file_path_sans_ext(oif_meta[[i]]$`[File Info] DataName`)
      } else if (lif_bool == TRUE) {
@@ -229,7 +230,7 @@ server <- shinyServer(function(input, output, session) {
    file.remove(to_zip)
    unlink(input_dir, recursive = TRUE)
    unlink("__MACOSX", recursive = TRUE)
-  
+
 
    })
   })
