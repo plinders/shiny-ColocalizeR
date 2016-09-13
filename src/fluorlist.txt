@@ -1,1 +1,15 @@
-AF488AF561AF647BODIPYCFPDsRedEGFPFluoresceinmCherrymCitrinePE (R-Phycoerythrin)pHTomatoRFPTagRFPYFP
+AF488
+AF561
+AF647
+BODIPY
+CFP
+DsRed
+EGFP
+Fluorescein
+mCherry
+mCitrine
+PE (R-Phycoerythrin)
+pHTomato
+RFP
+TagRFP
+YFP
