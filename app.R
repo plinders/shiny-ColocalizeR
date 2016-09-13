@@ -54,11 +54,11 @@ ui <- shinyUI(fluidPage(
       mainPanel(
         h3("Welcome to ColocalizeR!"),
         ("ColocalizeR currently only accepts files from Olympus microscopy software (.oif extension) in .zip format and .lif files (confirmed working with Leica SP8, SP5 unsupported but might work)."),
-        ("ColocalizeR pulls the name of each image from the metadata"),
+        p("ColocalizeR pulls the name of each image from the metadata,"),
         br(),
         br(),
         strong("ColocalizeR plots pixel intensities per channel in a scatter plot and derives R-squared values as a goodness-of-fit measure."),
-        ("ColocalizeR filters out pixels that are < 20% max intensity in both channels"),
+        p("ColocalizeR filters out pixels that are < 20% max intensity in both channels."),
         h4("Instructions:"),
         p("* Upload .lif file or .zip of .oif files using the sidebar."),
         p("* Pick the channel numbers corresponding to your fluorochromes of interest."),
