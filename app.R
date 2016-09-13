@@ -44,9 +44,9 @@ ui <- shinyUI(fluidPage(
       sidebarPanel(
         fileInput('file1', label = "Choose .zip or .lif file", accept = "application/zip|application/octet-stream"),
         selectInput('selectchan1', label = "Select first channel index for analysis", choices = 1:10, selected = 1),
-        selectInput('selectfluor1', label = "Select first fluorochome for analysis", choices = readLines("src/fluorlist.txt", warn = FALSE)),
+        selectInput('selectfluor1', label = "Select first fluorochome for analysis", choices = readLines("src/fluorlist.txt")),
         selectInput('selectchan2', label = "Select second channel index for analysis", choices = 1:10, selected = 2),
-        selectInput('selectfluor2', label = "Select second fluorochome for analysis", choices = readLines("src/fluorlist.txt", warn = FALSE)),
+        selectInput('selectfluor2', label = "Select second fluorochome for analysis", choices = readLines("src/fluorlist.txt")),
         actionButton('run', "Run ColocalizeR!"),
         downloadButton('output_file', "Download output!")),
 
@@ -67,7 +67,7 @@ ui <- shinyUI(fluidPage(
         br(),
         br(),
         h5("To do:"),
-        p("* Add ROI selection"),
+        p("* Add ROI selection")
 
 
       )
