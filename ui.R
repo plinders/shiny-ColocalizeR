@@ -3,7 +3,7 @@
 # run the application by clicking 'Run App' above.
 #
 # Find out more about building applications with Shiny here:
-# 
+#
 #    http://shiny.rstudio.com/
 #
 
@@ -17,7 +17,7 @@ shinyUI(fluidPage(
     $(document).ready(function() {
     // disable download at startup, output_file is the id of the download button
     $("#output_file").attr("disabled", "true").attr("onclick", "return false;");
-    
+
     Shiny.addCustomMessageHandler("download_ready", function(message) {
     $("#output_file").removeAttr("disabled").removeAttr("onclick").html(
     "<i class=\\"fa fa-download\\"></i>Download output!");
@@ -26,11 +26,11 @@ shinyUI(fluidPage(
     </script>
     '
   ))),
-  
-  
+
+
   # Application title
   titlePanel("ColocalizeR"),
-  
+
   # Sidebar with
   sidebarLayout(
     sidebarPanel(
@@ -43,7 +43,7 @@ shinyUI(fluidPage(
       uiOutput('ui.action'),
       tags$hr(),
       downloadButton('output_file', "Download output!")),
-    
+
     # Additional info
     mainPanel(
       h3("Welcome to ColocalizeR!"),
@@ -75,7 +75,7 @@ shinyUI(fluidPage(
     )
   ),
   hr(),
-  em("Colocalizer v0.5. PL 2016."),em(a("Membrane Trafficking in Immune Cells Lab.", href = "http://membranetrafficking.com")),
+  em("Colocalizer v0.6. PL 2016."),em(a("Membrane Trafficking in Immune Cells Lab.", href = "http://membranetrafficking.com")),
   br(),
   em("The software is provided \"as is\" and is free for personal use. Official GitHub repo of the underlying script is available "), em(a("here.", href = "https://github.com/plinders/ColocalizeR"))
   )
