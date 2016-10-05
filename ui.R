@@ -39,38 +39,39 @@ shinyUI(fluidPage(
       selectInput('selectfluor1', label = "Select first fluorochome for analysis", choices = readLines("src/fluorlist.txt")),
       selectInput('selectchan2', label = "Select second channel index for analysis", choices = 1:10, selected = 2),
       selectInput('selectfluor2', label = "Select second fluorochome for analysis", choices = readLines("src/fluorlist.txt")),
-      actionButton('run', "Run ColocalizeR!"),
+      #actionButton('run', "Run ColocalizeR!"),
+      uiOutput('ui.action'),
+      tags$hr(),
       downloadButton('output_file', "Download output!")),
     
     # Additional info
     mainPanel(
       h3("Welcome to ColocalizeR!"),
-      ("ColocalizeR currently only accepts files from Olympus microscopy software (.oif extension) in .zip format and .lif files (confirmed working with Leica SP8, SP5 unsupported but might work)."),
-      p("ColocalizeR pulls the name of each image from the metadata,"),
+      ("ColocalizeR currently accepts compressed .lsm, .oif and .tif (as .zip) and .lif files."),
+      p("ColocalizeR pulls the name of each image from the metadata, or from the filename of .tif files."),
       br(),
       br(),
       strong("ColocalizeR plots pixel intensities per channel in a scatter plot and derives R-squared values as a goodness-of-fit measure."),
       p("ColocalizeR filters out pixels that are < 20% max intensity in both channels."),
       h4("Instructions:"),
       tags$ol(
-        tags$li("Upload .lif file or .zip of .oif files using the sidebar."),
+        tags$li("Upload files using the sidebar."),
         tags$li("Select channel numbers and fluorochromes of interest."),
         tags$li("Press run."),
         tags$li("Download .zip with output files.")
       ),
       br(),
       h5("Changelog:"),
+      h6("v0.6"),
+      tags$ul(
+        tags$li("Added .lsm and .tif support"),
+        tags$li("Improved naming of output files, resolved bug with duplicate file names in datasets.")
+      ),
       h6("v0.5"),
       tags$ul(
         tags$li("Implemented parallel CPU processing -- huge speed increase!"),
         tags$li("Improved notifications & error handling")
-      ),
-      br(),
-      h5("To do:"),
-      tags$ol(
-        tags$li("Add ROI selection")
       )
-      
     )
   ),
   hr(),

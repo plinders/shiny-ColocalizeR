@@ -1,6 +1,12 @@
 require("shiny")
 require("parallel")
 
+output$ui.action <- renderUI({
+  if (is.null(input$file1)) return()
+  actionButton("run", "Run ColocalizeR!")
+})
+
+
 observeEvent(input$run, {
   #remove leftover .zip(s) and other files first
   file.remove(list.files(pattern = ".zip$|.lif$|.pdf$|.txt$"))
@@ -18,6 +24,8 @@ observeEvent(input$run, {
   #set bools to false so they don't break the script
   oif_bool <- FALSE
   lif_bool <- FALSE
+  lsm_bool <- FALSE
+  tif_bool <- FALSE
   #unzipping only required for .oif files (also zipped .lif files), not zipped .lif files should be handled accordingly
   input_dir <- file_path_sans_ext(inFile$name)
   if (grepl(pattern = ".lif$", inFile$name) == TRUE) {
@@ -32,7 +40,7 @@ observeEvent(input$run, {
   } else if (grepl(pattern = ".zip$", inFile$name) == TRUE) {
     input_dir <- file_path_sans_ext(inFile$name)
     unzip(inFile$datapath)
-    input_files <- paste(input_dir, "/", dir(input_dir, pattern = ".oif$|.lif$"), sep = "")
+    input_files <- paste(input_dir, "/", dir(input_dir, pattern = ".oif$|.lif$|.lsm$|.tif$"), sep = "")
     withProgress(message = "Reading images", {
       if (sum(grepl(".oif$", input_files)) / length(input_files) == 1) {
         images_list <- parLapply(cl, input_files, read.image)
@@ -50,8 +58,24 @@ observeEvent(input$run, {
         }
         lif_bool <- TRUE
         showNotification("Import complete, .lif files detected. Starting processing...", type = "message")
+      } else if (sum(grepl(".lsm$", input_files)) / length(input_files) == 1) {
+        images_list <- parLapply(cl, input_files, read.image)
+        lsm_meta <- list()
+        for (i in seq_along(images_list)) {
+          lsm_meta[[i]] <- seriesMetadata(images_list[[i]])
+        }
+        lsm_bool <- TRUE
+        showNotification("Import complete, .lsm files detected. Starting processing...", type = "message")
+      } else if (sum(grepl(".tif$", input_files)) / length(input_files) == 1) {
+        images_list <- parLapply(cl, input_files, read.image)
+        tif_meta <- list()
+        for (i in seq_along(images_list)) {
+          tif_meta[[i]] <- basename(file_path_sans_ext(input_files[[i]]))
+        }
+        tif_bool <- TRUE
+        showNotification("Import complete, .tif files detected. Starting processing...", type = "message")
       } else {
-        showNotification("Only upload .lif or .oif files seperately. Refresh page to retry.", type = "error", duration = NULL)
+        showNotification("Only upload .lif, .oif, .lsm or .tif files seperately. Refresh page to retry.", type = "error", duration = NULL)
       }
     })
   }
@@ -65,9 +89,8 @@ observeEvent(input$run, {
   progress <- shiny::Progress$new()
   on.exit(progress$close())
   progress$set(message = "Processing images", value = 0)
-    #Turn images into matrices, this will become a for loop for automated processing of all files
-    #Channel 1 = GFP, Channel 2 = mCh, this could become a user input thing once I figure out how that works
-    colocmainloop <- function(i) {
+
+      colocmainloop <- function(i) {
       require("rJava")
       require("devtools")
       require("EBImage")
@@ -82,10 +105,14 @@ observeEvent(input$run, {
         img_name <- file_path_sans_ext(oif_meta[[i]]$`[File Info] DataName`)
       } else if (lif_bool == TRUE) {
         img_name <- lif_meta[[i]]$`Image name`
+      } else if (lsm_bool == TRUE) {
+        img_name <- lsm_meta[[i]]$`Recording Name #1`
+      } else if (tif_bool == TRUE) {
+        img_name <- tif_meta[[i]]
       }
       
       #Start pdf, plots will go in here
-      pdf(paste(input_dir, "_", img_name, ".pdf", sep = ""), paper = "a4")
+      pdf(paste(input_dir, "_", i, "_", img_name, ".pdf", sep = ""), paper = "a4")
       
       chan1_dt <- data.table(getFrame(images_list[[i]], as.numeric(input$selectchan1)))
       chan2_dt <- data.table(getFrame(images_list[[i]], as.numeric(input$selectchan2)))
@@ -139,7 +166,7 @@ observeEvent(input$run, {
       final_model <- lm(chan2_trans ~ chan1_relative - 1, data = scatter_dt)
       dev.off()
       #Create .txt file to output regression results
-      sink(file = paste(input_dir, "_", img_name, ".txt", sep = ""), type = "output")
+      sink(file = paste(input_dir, "_", i, "_", img_name, ".txt", sep = ""), type = "output")
       print(summary(final_model))
       sink()
       #Print to console to keep track of progress
@@ -153,18 +180,20 @@ observeEvent(input$run, {
     
     #zip all files
     to_zip <- list.files(pattern = paste(input_dir, "..", sep = ""), include.dirs = FALSE, recursive = FALSE)
-    zip(paste(input_dir, "_output", sep = ""), files = to_zip)
+    zip(paste(file_path_sans_ext(input_dir), "_output", sep = ""), files = to_zip)
     #Download button
     output$output_file <- downloadHandler(
       filename <- function() {
-        paste(input_dir, "_output", ".zip", sep = "")
+        paste(file_path_sans_ext(input_dir), "_output", ".zip", sep = "")
       },
       
       content <- function(file) {
-        file.copy(paste(input_dir, "_output", ".zip", sep = ""), file)
+        file.copy(paste(file_path_sans_ext(input_dir), "_output", ".zip", sep = ""), file)
       },
       contentType = "application/zip"
     )
+    
+    
     session$sendCustomMessage("download_ready", list(fileSize = floor(runif(1) * 10000)))
     
     #clean up files

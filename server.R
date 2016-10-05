@@ -19,3 +19,4 @@ options(shiny.maxRequestSize = 1024 * 1024 ^ 2)
 
 # Define server logic required for ColocalizeR
 shinyServer(function(input, output, session) source("src/app.R", local = TRUE))
+
