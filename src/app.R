@@ -118,13 +118,13 @@ observeEvent(input$run, {
       chan2_dt <- data.table(getFrame(images_list[[i]], as.numeric(input$selectchan2)))
       
       #Change pixel intensity scaling based on checkbox values
-      if (input$bitdepth == "8-bit"){
+      if (input$bitdepth == 1){
         chan1_dt_16bit <- chan1_dt * 256
         chan2_dt_16bit <- chan2_dt * 256
-      } else if (input$bitdepth == "12-bit"){
+      } else if (input$bitdepth == 2){
         chan1_dt_16bit <- chan1_dt * 4096
         chan2_dt_16bit <- chan2_dt * 4096
-      } else if (input$bitdepth == "16-bit"){
+      } else if (input$bitdepth == 3){
         chan1_dt_16bit <- chan1_dt * 65536
         chan2_dt_16bit <- chan2_dt * 65536
       }
@@ -200,8 +200,8 @@ observeEvent(input$run, {
     }
     #ColocalizeR ends here
 
-    #mclapply(seq_along(images_list), colocmainloop, mc.cores = total_cores)
-    lapply(seq_along(images_list), colocmainloop)
+    mclapply(seq_along(images_list), colocmainloop, mc.cores = total_cores)
+    #lapply(seq_along(images_list), colocmainloop)
 
     stopCluster(cl)
     
