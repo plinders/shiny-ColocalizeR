@@ -39,6 +39,10 @@ shinyUI(fluidPage(
       selectInput('selectfluor1', label = "Select first fluorochome for analysis", choices = readLines("src/fluorlist.txt")),
       selectInput('selectchan2', label = "Select second channel index for analysis", choices = 1:10, selected = 2),
       selectInput('selectfluor2', label = "Select second fluorochome for analysis", choices = readLines("src/fluorlist.txt")),
+      radioButtons('bitdepth', label = "Select imaging bit depth", choices = c("8-bit", "12-bit", "16-bit", "Unknown")),
+      checkboxInput('normalizevals', label = "Normalize intensities to mean fluorescence", value = 0),
+      checkboxInput('airyscan', label = "Check if you used Airyscan processing on the LSM880", value = 0),
+      
       #actionButton('run', "Run ColocalizeR!"),
       uiOutput('ui.action'),
       tags$hr(),
@@ -62,12 +66,16 @@ shinyUI(fluidPage(
       ),
       br(),
       h5("Changelog:"),
-      h6("v0.6"),
+      h6("170706 v0.7"),
+      tags$ul(
+        tags$li("Implemented checkboxes to allow setting parameters.")
+      ),
+      h6("161005 v0.6"),
       tags$ul(
         tags$li("Added .lsm and .tif support"),
         tags$li("Improved naming of output files, resolved bug with duplicate file names in datasets.")
       ),
-      h6("v0.5"),
+      h6("160919 v0.5"),
       tags$ul(
         tags$li("Implemented parallel CPU processing -- huge speed increase!"),
         tags$li("Improved notifications & error handling")

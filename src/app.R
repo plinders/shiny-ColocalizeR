@@ -117,11 +117,29 @@ observeEvent(input$run, {
       chan1_dt <- data.table(getFrame(images_list[[i]], as.numeric(input$selectchan1)))
       chan2_dt <- data.table(getFrame(images_list[[i]], as.numeric(input$selectchan2)))
       
-      #Change pixel intensity scale from 0 to 1 to 0 to 4096
-      if (max(chan1_dt, na.rm = TRUE) <= 1) {
+      #Change pixel intensity scaling based on checkbox values
+      if (input$bitdepth == "8-bit"){
+        chan1_dt_16bit <- chan1_dt * 256
+        chan2_dt_16bit <- chan2_dt * 256
+      } else if (input$bitdepth == "12-bit"){
         chan1_dt_16bit <- chan1_dt * 4096
         chan2_dt_16bit <- chan2_dt * 4096
+      } else if (input$bitdepth == "16-bit"){
+        chan1_dt_16bit <- chan1_dt * 65536
+        chan2_dt_16bit <- chan2_dt * 65536
       }
+      
+      #subtract 10000 from Airyscan processing images
+      if (input$airyscan == 1){
+        chan1_dt_16bit <- chan1_dt_16bit - 10000
+        chan2_dt_16bit <- chan2_dt_16bit - 10000
+      }
+      
+      #Change pixel intensity scale from 0 to 1 to 0 to 4096
+      # if (max(chan1_dt, na.rm = TRUE) <= 1) {
+      #   chan1_dt_16bit <- chan1_dt * 4096
+      #   chan2_dt_16bit <- chan2_dt * 4096
+      # }
       
       #Plot histograms to show distributions of intensities
       #Data frames cannot be plotted as histograms, hence as.matrix
@@ -143,16 +161,24 @@ observeEvent(input$run, {
       hist(chan1_vect, main = "Filter < 200 AU", xlab = paste(fluo1, "intensity"))
       hist(chan2_vect, main = "Filter < 200 AU", xlab = paste(fluo2, "intensity"))
       
-      #Normalize channels based on mean fluorescent intensity
-      chan1_relative <- chan1_vect / mean(chan1_vect, na.rm = TRUE)
-      chan2_relative <- chan2_vect / mean(chan2_vect, na.rm = TRUE)
-      
+      #Normalize channels based on mean fluorescent intensity 
       #Plot histograms, scatter plot, regression line (-1 to force line through origin)
-      hist(chan1_relative, main = "Normalized", xlab = paste(fluo1, "intensity"))
-      hist(chan2_relative, main = "Normalized", xlab = paste(fluo2, "intensity"))
-      smoothScatter(chan1_relative, chan2_relative, main = "Pre-Y axis transformation", xlab = fluo1, ylab = fluo2)
-      abline(lm(chan2_relative ~ chan1_relative - 1), col = "red")
-      
+      if (input$normalizevals == 1){
+        chan1_relative <- chan1_vect / mean(chan1_vect, na.rm = TRUE)
+        chan2_relative <- chan2_vect / mean(chan2_vect, na.rm = TRUE)
+        hist(chan1_relative, main = "Normalized", xlab = paste(fluo1, "intensity"))
+        hist(chan2_relative, main = "Normalized", xlab = paste(fluo2, "intensity"))
+        smoothScatter(chan1_relative, chan2_relative, main = "Pre-Y axis transformation", xlab = fluo1, ylab = fluo2)
+        abline(lm(chan2_relative ~ chan1_relative - 1), col = "red")
+      } else {
+        chan1_relative <- chan1_vect
+        chan2_relative <- chan2_vect
+        hist(chan1_relative, main = "Final", xlab = paste(fluo1, "intensity"))
+        hist(chan2_relative, main = "Final", xlab = paste(fluo2, "intensity"))
+        smoothScatter(chan1_relative, chan2_relative, main = "Pre-Y axis transformation", xlab = fluo1, ylab = fluo2)
+        abline(lm(chan2_relative ~ chan1_relative - 1), col = "red")
+      }
+    
       #Calculate how Y-axis (mch_trans) needs to be transformed to reach X=Y
       regression_norm <- lm(chan2_relative ~ chan1_relative - 1)
       chan2_trans <- chan2_relative * (1 / regression_norm$coefficients[1])
