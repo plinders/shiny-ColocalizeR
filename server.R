@@ -14,8 +14,16 @@ library(EBImage)
 library(RBioFormats)
 library(parallel)
 library(data.table)
+library(log4r)
 options(shiny.maxRequestSize = 1024 * 1024 ^ 2)
 
+loggerDebug <- create.logger()
+logfile(loggerDebug) <- 'debugData.log'
+level(loggerDebug) <- 'INFO'
+
+loggerServer <- create.logger()
+logfile(loggerServer) <- 'serverData.log'
+level(loggerServer) <- 'INFO'
 
 # Define server logic required for ColocalizeR
 shinyServer(function(input, output, session) source("src/app.R", local = TRUE))
