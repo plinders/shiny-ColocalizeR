@@ -200,7 +200,8 @@ observeEvent(input$run, {
     }
     #ColocalizeR ends here
 
-    mclapply(seq_along(images_list), colocmainloop, mc.cores = total_cores)
+    #mclapply(seq_along(images_list), colocmainloop, mc.cores = total_cores)
+    lapply(seq_along(images_list), colocmainloop)
 
     stopCluster(cl)
     
