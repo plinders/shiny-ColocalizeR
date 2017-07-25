@@ -43,7 +43,8 @@ observeEvent(input$run, {
     input_files <- paste(input_dir, "/", dir(input_dir, pattern = ".oif$|.lif$|.lsm$|.tif$"), sep = "")
     withProgress(message = "Reading images", {
       if (sum(grepl(".oif$", input_files)) / length(input_files) == 1) {
-        images_list <- parLapply(cl, input_files, read.image)
+       # images_list <- parLapply(cl, input_files, read.image)
+        images_list <- lapply(input_files, read.image)
         oif_meta <- list()
         for (i in seq_along(images_list)) {
           oif_meta[[i]] <- globalMetadata(images_list[[i]])
@@ -67,7 +68,8 @@ observeEvent(input$run, {
         lsm_bool <- TRUE
         showNotification("Import complete, .lsm files detected. Starting processing...", type = "message")
       } else if (sum(grepl(".tif$", input_files)) / length(input_files) == 1) {
-        images_list <- parLapply(cl, input_files, read.image)
+       # images_list <- parLapply(cl, input_files, read.image)
+        images_list <- lapply(input_files, read.image)
         tif_meta <- list()
         for (i in seq_along(images_list)) {
           tif_meta[[i]] <- basename(file_path_sans_ext(input_files[[i]]))
@@ -200,8 +202,8 @@ observeEvent(input$run, {
     }
     #ColocalizeR ends here
 
-    mclapply(seq_along(images_list), colocmainloop, mc.cores = total_cores)
-    #lapply(seq_along(images_list), colocmainloop)
+    #mclapply(seq_along(images_list), colocmainloop, mc.cores = total_cores)
+    lapply(seq_along(images_list), colocmainloop)
 
     stopCluster(cl)
     
